@@ -1,0 +1,156 @@
+# Parse Mysql dump documents (WARNING: parser instances not-reusable)
+
+# require 'treetop'
+# Treetop.load 'lib/mytrilogy/mysql_statements'
+# $mystmt_delimiter = nil
+# parser = Mytrilogy::MysqlStatmentsParser.new
+# parser.parse("DELIMITER ;\n SELECT 2 - .2 FROM tables; SELECT /*stupid comment*/ NULL;").statements
+# puts parser.failure_reason
+
+module Mytrilogy
+
+
+grammar MysqlStatments
+
+   rule script
+      delimiter_statement? statement more_statements:((delimiter / delimiter_statement) statement)*  delimiter? {
+         def statements
+            [statement.statement_source] + more_statements.elements.map { |elt| elt.statement.statement_source }
+         end
+      }
+   end
+
+   rule delimiter
+      #"#{$mystmt_delimiter || ';'}"
+      
+      "#{$mystmt_delimiter || ';'}"        &{ |sarr| sarr[0].text_value == ($mystmt_delimiter || ';') } /
+      "#{($mystmt_delimiter || ';')[0]}"+  &{ |sarr| sarr[0].text_value == ($mystmt_delimiter || ';') }
+       
+      # &{ |sarr| 
+      #    del = $mystmt_delimiter || ';'
+      #    if sarr[0].text_value == del
+      #       puts "== testing delimter: #{sarr[0].inspect}"
+      #       true
+      #    else
+      #       false
+      #    end
+      # }
+   end
+
+   rule non_delimiter
+      #!"#{$mystmt_delimiter || ';'}" [^\n\r]+
+      #!"#{$mystmt_delimiter || ';'}" [^\n\r]+       &{ |sarr| sarr[0].text_value != ($mystmt_delimiter || ';') } /
+      #!"#{($mystmt_delimiter || ';')[0]}" [^\n\r]+  &{ |sarr| sarr[0].text_value != ($mystmt_delimiter || ';') }
+      #((!"#{$mystmt_delimiter || ';'}" [^ \t\n\r]+) / [^\n\r]+) &{ |sarr| sarr[0].text_value != ($mystmt_delimiter || ';') }
+      [^\n\r]+  &{ |sarr| sarr[0].text_value != ($mystmt_delimiter || ';') }
+   end
+
+   rule delimiter_statement
+      space? set_delimiter white
+   end
+
+   rule set_delimiter
+      [Dd] [Ee] [Ll] [Ii] [Mm] [Ii] [Tt] [Ee] [Rr] white [^\n\r]+ &{ |sarr| $mystmt_delimiter = sarr.last.text_value; true }
+      #  puts "== setting delimiter: '#{$mystmt_delimiter}'";
+   end
+
+   rule future_set_delimiter
+       [Dd] [Ee] [Ll] [Ii] [Mm] [Ii] [Tt] [Ee] [Rr] white [^\n\r]+ 
+    end
+
+   rule statement
+      (!delimiter (space / expression))+ {
+         def statement_source
+            text_value
+         end
+      }
+   end
+
+   rule expression
+      !future_set_delimiter ( full_name / short_name / number / quoted_string / tweener / non_delimiter)
+   end
+
+   rule tweener
+      separator / space
+   end
+
+   rule user_name
+      (name / quoted_string) '@' (name / quoted_string)
+   end
+
+   rule full_name
+      name '.' name
+   end
+
+   rule short_name
+      '@'0..2 name
+   end
+
+   rule name
+      word / tick_quoted_string / '*'
+   end
+   
+   rule word
+      alpha_char+ alphanumeric_char*
+   end
+
+   rule tick_quoted_string
+      '`' string:(!'`' ("\\\\" / '\`' / .))* '`'
+   end
+
+   rule quoted_string
+      double_quoted_string / single_quoted_string
+   end
+
+   rule double_quoted_string
+      '"' string:(!'"' ("\\\\" / '\"' / .))* '"'
+   end
+
+   rule single_quoted_string
+      "'" string:(!"'" ("\\\\" / "\\'" / .))* "'"
+   end
+
+   rule c_comment
+     '/*'
+     (
+       !'*/'
+       (. / "\n")
+     )*
+     '*/'
+   end
+
+   rule separator
+      conditional_operator / ',' / '-' / '+' / '*' / '/' / '(' / ')'
+   end
+
+   rule conditional_operator
+      '<>' / '>=' / '<=' / '=' / '>' / '<'
+   end
+
+   rule space
+      (white / comment_to_eol / c_comment)+
+   end
+
+   rule number
+      ([0-9]+ [0-9\.]? [0-9]*) / ([\.] [0-9]+)
+   end
+
+   rule alphanumeric_char
+      alpha_char / [0-9]
+   end
+
+   rule alpha_char
+      [A-Za-z_]
+   end
+
+   rule comment_to_eol
+      '--' (!"\n" .)*
+   end
+
+   rule white
+      [ \t\n\r]
+   end
+
+end
+
+end
