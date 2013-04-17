@@ -2,6 +2,15 @@
 
 Mysql utils for migrations and stored procedures.
 
+##  Features
+
+Replaces the **db:test:prepare** with a mysqldump sequence which attempts to safely duplicate triggers and store procedures.
+
+Provides a includable module **ActiverecordStoredprocedure** which provides a **find_by_procedure** ActiveRecord method for calling stored procedures from models as well as handling and mapping MySQL signals to ruby exceptions.
+
+Provides rake tasks for converting multi-statement SQL files into rails database migrations.
+
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -18,7 +27,34 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+
+### ActiveRecord:
+
+    class MyRecord < ActiveRecord::Base
+		include ActiverecordStoredprocedure
+    end
+    
+    # The columns returned from 'name_of_procedure' become the columns of the
+    # MyRecord instance.
+
+    MyRecord.find_by_procedure(:name_of_procedure, 'param1', 'param2')
+    
+    # Uses ActiveRecord '?' to replace parameter values with SQL type safe values    
+
+### Rake tasks:
+
+Prepare a test database with triggers and more:
+
+    $ rake db:test:prepare
+
+Convert multi-statement sql file to a migration file:
+
+	$ rake db:mysql:sql2rb IN=/tmp/somefile.sql OUT=db/migrate/20130319210111_some_sql.rb
+
+Convert a dump of the current database environment to a migration file:
+ 
+    $ rake db:mysql:dump2rb OUT=db/migrate/20130214210111_copy_schema.rb
+    
 
 ## Contributing
 
