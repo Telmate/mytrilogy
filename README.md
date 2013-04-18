@@ -55,6 +55,10 @@ Convert a dump of the current database environment to a migration file:
  
     $ rake db:mysql:dump2rb OUT=db/migrate/20130214210111_copy_schema.rb
     
+Convert potentially updated db:migrate_sql output back to a ruby migration
+	
+	$ rake rake db:mysql:migrate_sql2rb
+
 
 ## Contributing
 

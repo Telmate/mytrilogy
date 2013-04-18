@@ -95,6 +95,25 @@ namespace :db do
       puts "Completed, #{bytes} bytes written."
     end
 
+    desc "Convert /db/migration_sql scripts back into migration rb files"
+    task :migrate_sql2rb => :environment do
+
+      require 'mytrilogy/mysql_transformer'
+      mt = Mytrilogy::MysqlTransformer.new
+      mt.strip_db_names << ActiveRecord::Base.configurations[Rails.env]['database']
+      mt.strip_schema_migration_versions = true
+
+      msqls = Dir.glob(File.join(Rails.root, "db", "migrate_sql", '*.sql'))
+      msqls.each { |sql_file|
+        mig_name = File.basename(sql_file, ".sql")
+        fout = Rails.root + "db/migrate/#{mig_name}.rb"
+        mt.dump2migration(sql_file, fout.to_s)
+        puts "Updated: #{File.basename(fout)}"
+      }
+
+
+    end
+
   end
 
 end

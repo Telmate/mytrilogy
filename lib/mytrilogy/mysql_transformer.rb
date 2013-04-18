@@ -8,11 +8,12 @@ module Mytrilogy
 
   class MysqlTransformer
 
-    attr_accessor :strip_definer, :strip_db_names
+    attr_accessor :strip_definer, :strip_db_names, :strip_schema_migration_versions
 
     def initialize
       $mystmt_delimiter = nil
       @strip_definer = true
+      @strip_schema_migration_versions = false
       @strip_db_names = []
       @parser = MysqlStatmentsParser.new
     end
@@ -40,6 +41,10 @@ module Mytrilogy
           #   dbname_rx = Regexp.new @strip_db_names.collect {|dbn| ["#{dbn}\\.", "`#{dbn}`\\."] }.flatten.join('|')
           #   sstmt.gsub!(dbname_rx, "")
           # end
+
+          if @strip_schema_migration_versions
+            next if sstmt =~ /INSERT\s+INTO\s+schema_migrations/im
+          end
 
           if sstmt =~ /\n|"/
             lines << "#{ruby_cmd} <<_SQL_\n#{sstmt}\n_SQL_\n"
