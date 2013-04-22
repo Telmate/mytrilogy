@@ -39,7 +39,17 @@ Or install it yourself as:
 
     MyRecord.find_by_procedure(:name_of_procedure, 'param1', 'param2')
     
-    # Uses ActiveRecord '?' to replace parameter values with SQL type safe values    
+    # Uses ActiveRecord '?' to replace parameter values with SQL type safe values
+    
+    # To execute without result set
+    MyRecord.call_procedure(:name_of_procedure, 'param1', 'param2')
+    
+    
+MySQL procedures can signal errors in a format that triggers familiar ruby exceptions. Example:
+
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = '#ActiveRecord::RecordNotFound# Unable to find or create MyRecord';
+
+The ActiverecordStoredprocedure will convert and raise classes named between to hash '#' symbols.
 
 ### Rake tasks:
 
