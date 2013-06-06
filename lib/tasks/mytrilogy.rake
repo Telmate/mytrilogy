@@ -8,10 +8,12 @@ def remove_task(task_name)
   Rake.application.remove_task(task_name)
 end
 
-# current_config is not defined in earlier versions of ActiveRecord::Tasks::DatabaseTasks
+# The current_config method is not defined in earlier versions of ActiveRecord::Tasks::DatabaseTasks
+# See: https://github.com/rails/rails/blob/master/activerecord/lib/active_record/tasks/database_tasks.rb#L57
 unless self.respond_to?(:current_config)
+
   def current_config(options = {})
-    options.reverse_merge! :env => nil
+    options.reverse_merge! :env => Rails.env
     if options.has_key?(:config)
       @current_config = options[:config]
     else
@@ -22,6 +24,7 @@ unless self.respond_to?(:current_config)
                           end
     end
   end
+
 end
 
 # Override existing test task to prevent integrations
