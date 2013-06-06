@@ -8,6 +8,25 @@ def remove_task(task_name)
   Rake.application.remove_task(task_name)
 end
 
+# The current_config method is not defined in earlier versions of ActiveRecord::Tasks::DatabaseTasks
+# See: https://github.com/rails/rails/blob/master/activerecord/lib/active_record/tasks/database_tasks.rb#L57
+unless self.respond_to?(:current_config)
+
+  def current_config(options = {})
+    options.reverse_merge! :env => Rails.env
+    if options.has_key?(:config)
+      @current_config = options[:config]
+    else
+      @current_config ||= if ENV['DATABASE_URL']
+                            ConnectionAdapters::ConnectionSpecification::Resolver.new(ENV["DATABASE_URL"], {}).spec.config.stringify_keys
+                          else
+                            ActiveRecord::Base.configurations[options[:env]]
+                          end
+    end
+  end
+
+end
+
 # Override existing test task to prevent integrations
 # from being run unless specifically asked for
 remove_task 'db:test:prepare'
