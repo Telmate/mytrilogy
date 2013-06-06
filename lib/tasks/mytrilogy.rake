@@ -9,10 +9,7 @@ def remove_task(task_name)
 end
 
 # current_config is not defined in earlier versions of ActiveRecord::Tasks::DatabaseTasks
-if defined?(Rails)
-  require 'active_record'
-end
-unless ActiveRecord::Tasks::DatabaseTasks.respond_to?(:current_config)
+unless self.respond_to?(:current_config)
   attr_writer :current_config
 
   def current_config(options = {})
