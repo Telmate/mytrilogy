@@ -11,7 +11,7 @@ end
 # current_config is not defined in earlier versions of ActiveRecord::Tasks::DatabaseTasks
 unless self.respond_to?(:current_config)
   def current_config(options = {})
-    options.reverse_merge! :env => env
+    options.reverse_merge! :env => nil
     if options.has_key?(:config)
       @current_config = options[:config]
     else
