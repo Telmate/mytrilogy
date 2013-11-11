@@ -1,3 +1,4 @@
+
 Rake::TaskManager.class_eval do
   def remove_task(task_name)
     @tasks.delete(task_name.to_s)
@@ -12,7 +13,6 @@ end
 # from being run unless specifically asked for
 remove_task 'db:test:prepare'
 remove_task 'db:test:clone_structure'
-
 
 namespace :db do
   namespace :test do
