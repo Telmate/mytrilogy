@@ -1,0 +1,11 @@
+class <%= options[:model_name].camelize  %> < ActiveRecord::Migration
+  def self.up
+    Mytrilogy::MysqlMigrations.migration_for_file(__FILE__, :up)
+  end
+
+  def self.down
+  <% unless options[:down] =~ /no-down/ %>
+    Mytrilogy::MysqlMigrations.migration_for_file(__FILE__, :down)
+  <% end %>
+  end
+end
