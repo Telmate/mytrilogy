@@ -1,0 +1,7 @@
+USE `<%= @database %>`;
+
+-- start rails migration
+
+-- end rails migration
+
+DELETE FROM schema_migrations WHERE version = <%= @time_stamp %>;

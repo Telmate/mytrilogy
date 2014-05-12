@@ -33,18 +33,18 @@ Or install it yourself as:
     class MyRecord < ActiveRecord::Base
 		include ActiverecordStoredprocedure
     end
-    
+
     # The columns returned from 'name_of_procedure' become the columns of the
     # MyRecord instance.
 
     MyRecord.find_by_procedure(:name_of_procedure, 'param1', 'param2')
-    
+
     # Uses ActiveRecord '?' to replace parameter values with SQL type safe values
-    
+
     # To execute without result set
     MyRecord.call_procedure(:name_of_procedure, 'param1', 'param2')
-    
-    
+
+
 MySQL procedures can signal errors in a format that triggers familiar ruby exceptions. Example:
 
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = '#ActiveRecord::RecordNotFound# Unable to find or create MyRecord';
@@ -62,12 +62,12 @@ Convert multi-statement sql file to a migration file:
 	$ rake db:mysql:sql2rb IN=/tmp/somefile.sql OUT=db/migrate/20130319210111_some_sql.rb
 
 Convert a dump of the current database environment to a migration file:
- 
+
     $ rake db:mysql:dump2rb OUT=db/migrate/20130214210111_copy_schema.rb
-    
+
 Convert potentially updated db:migrate_sql output back to a ruby migration
-	
-	$ rake rake db:mysql:migrate_sql2rb
+
+	$ rake db:mysql:migrate_sql2rb
 
 
 ## Contributing
