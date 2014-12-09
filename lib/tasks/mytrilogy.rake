@@ -28,7 +28,7 @@ unless self.respond_to?(:current_config)
 end
 
 
-if Rails.version.to_i > 2
+if Rails.version.to_i > 1
   # Override existing test task to prevent integrations
   # from being run unless specifically asked for
   remove_task 'db:test:prepare'
