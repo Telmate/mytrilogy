@@ -30,7 +30,7 @@ class MysqlMigrations
     end
     raise "Missing mysql command line client." if `which mysql`.empty?
     config = ActiveRecord::Base.configurations[Rails.env]
-    mysql_config_opts = "-h #{config['host']} -u #{config['username']} -p#{config['password']} #{config['database']}"
+    mysql_config_opts = "-h #{config['host']} -u #{config['username']} -p#{config['password']} --port=#{config['port'] || 3306} #{config['database']}"
 
     tmp = Tempfile.new("mytrilogy")
     open(tmp.path, "w") { |tio|

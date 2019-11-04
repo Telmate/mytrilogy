@@ -41,8 +41,8 @@ if Rails.version.to_i > 1
       task :prepare => 'db:test:purge' do
         config = current_config
         test_config = current_config(:config => ActiveRecord::Base.configurations['test'])
-        mysql_config_opts = "-h #{config['host']} -u #{config['username']} -p#{config['password']} #{config['database']}"
-        mysql_test_config_opts = "-h #{test_config['host']}  -u #{test_config['username']} -p#{test_config['password']} #{test_config['database']}"
+        mysql_config_opts = "-h #{config['host']} -u #{config['username']} -p#{config['password']} --port=#{config['port'] || 3306} #{config['database']}"
+        mysql_test_config_opts = "-h #{test_config['host']}  -u #{test_config['username']} -p#{test_config['password']} --port=#{test_config['port'] || 3306} #{test_config['database']}"
 
         test_databases = {}
         ActiveRecord::Base.configurations.each do |key,val|
@@ -103,7 +103,7 @@ if Rails.version.to_i > 1
         mt = Mytrilogy::MysqlTransformer.new
         config = ActiveRecord::Base.configurations[Rails.env]
         mt.strip_db_names << config['database']
-        mysql_config_opts = "-h #{config['host']} -u #{config['username']} -p#{config['password']} #{config['database']}"
+        mysql_config_opts = "-h #{config['host']} -u #{config['username']} -p#{config['password']} --port=#{config['port'] || 3306} #{config['database']}"
         tmpname = "/tmp/dump#{Time.now.to_i}.sql"
         puts `mysqldump --routines --no-data --ignore-table=#{config['database']}.schema_migrations #{mysql_config_opts} > #{tmpname}`
         bytes = mt.dump2migration(tmpname, fout)
