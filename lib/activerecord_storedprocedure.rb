@@ -14,6 +14,8 @@ module ActiverecordStoredprocedure
         find_by_sql(procedure_sql_array(proc_name, *args))
       rescue ActiveRecord::StatementInvalid => arsi
         procedure_rescue_reflect(arsi)
+      ensure
+        check_more_results
       end
     end
     
@@ -23,10 +25,20 @@ module ActiverecordStoredprocedure
         connection.execute(sanitize_sql(procedure_sql_array(proc_name, *args)))
       rescue ActiveRecord::StatementInvalid => arsi
         procedure_rescue_reflect(arsi)
+      ensure
+        check_more_results
       end
     end
     
   protected
+
+    def check_more_results
+      if connection.adapter_name == 'Mysql2'
+        while connection.raw_connection.more_results?
+          connection.raw_connection.next_result
+        end
+      end
+    end
     
     # construct mysql call + argument array
     def procedure_sql_array(proc_name, *args)
