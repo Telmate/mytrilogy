@@ -45,7 +45,11 @@ if Rails.version.to_i > 1
         mysql_test_config_opts = "-h #{test_config['host']}  -u #{test_config['username']} -p#{test_config['password']} --port=#{test_config['port'] || 3306} #{test_config['database']}"
 
         test_databases = {}
-        ActiveRecord::Base.configurations.each do |key,val|
+        db_configs = ActiveRecord::Base.configurations
+        if db_configs.respond_to?(:configurations)
+          db_configs = db_configs.configurations.each_with_object({}) { |c, h| h[c.env_name] = c.configuration_hash.with_indifferent_access }
+        end
+        db_configs.each do |key,val|
           if /test$/ =~ key
             dbn = val["database"]
             test_databases[dbn[/(.*)_test/,1]] = dbn
