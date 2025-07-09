@@ -20,7 +20,7 @@ unless self.respond_to?(:current_config)
       @current_config ||= if ENV['DATABASE_URL']
                             ConnectionAdapters::ConnectionSpecification::Resolver.new(ENV["DATABASE_URL"], {}).spec.config.stringify_keys
                           else
-                            ActiveRecord::Base.configurations[options[:env]]
+                            Mytrilogy.get_db_config(options[:env])
                           end
     end
   end
@@ -40,7 +40,7 @@ if Rails.version.to_i > 1
       desc "Check for pending migrations and load the test schema with mysql"
       task :prepare => 'db:test:purge' do
         config = current_config
-        test_config = current_config(:config => ActiveRecord::Base.configurations['test'])
+        test_config = current_config(:config => Mytrilogy.get_db_config('test'))
         mysql_config_opts = "-h #{config['host']} -u #{config['username']} -p#{config['password']} --port=#{config['port'] || 3306} #{config['database']}"
         mysql_test_config_opts = "-h #{test_config['host']}  -u #{test_config['username']} -p#{test_config['password']} --port=#{test_config['port'] || 3306} #{test_config['database']}"
 
@@ -88,7 +88,7 @@ if Rails.version.to_i > 1
         raise "IN=file.sql OUT=file.rb required" if fin.blank? || fout.blank?
         require 'mytrilogy/mysql_transformer'
         mt = Mytrilogy::MysqlTransformer.new
-        mt.strip_db_names << ActiveRecord::Base.configurations[Rails.env]['database']
+        mt.strip_db_names << Mytrilogy.get_db_config(Rails.env)['database']
         bytes = mt.dump2migration(fin, fout)
         puts "Completed, #{bytes} bytes written."
       end
@@ -101,7 +101,7 @@ if Rails.version.to_i > 1
         raise "OUT=file.rb required" if fout.blank?
         require 'mytrilogy/mysql_transformer'
         mt = Mytrilogy::MysqlTransformer.new
-        config = ActiveRecord::Base.configurations[Rails.env]
+        config = Mytrilogy.get_db_config(Rails.env)
         mt.strip_db_names << config['database']
         mysql_config_opts = "-h #{config['host']} -u #{config['username']} -p#{config['password']} --port=#{config['port'] || 3306} #{config['database']}"
         tmpname = "/tmp/dump#{Time.now.to_i}.sql"
@@ -115,7 +115,7 @@ if Rails.version.to_i > 1
 
         require 'mytrilogy/mysql_transformer'
         mt = Mytrilogy::MysqlTransformer.new
-        mt.strip_db_names << ActiveRecord::Base.configurations[Rails.env]['database']
+        mt.strip_db_names << Mytrilogy.get_db_config(Rails.env)['database']
         mt.strip_schema_migration_versions = true
 
         msqls = Dir.glob(File.join(Rails.root, "db", "migrate_sql", '*.sql'))
@@ -134,7 +134,7 @@ namespace :generate do
   desc "Generate a mytrilogy migration template file"
   task :migration, [:model_name, :down] => :environment do |task, options|
     require 'erb'
-    @database = ActiveRecord::Base.configurations["production"]['database']
+    @database = Mytrilogy.get_db_config("production")['database']
     migrate_directory = "#{Rails.root}/db/migrate"
     @time_stamp = Time.now.utc.strftime("%Y%m%d%H%M%S")
     file_name_prefix = "#{@time_stamp}_#{options[:model_name].underscore}"

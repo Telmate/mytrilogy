@@ -69,7 +69,7 @@ class #{clsname} < ActiveRecord::Migration
   def up
     ######## BEGIN Mytrilogy::MysqlTransformer.dump2migration
 #{body}
-    execute \"USE \#{ActiveRecord::Base.configurations[Rails.env]['database']}\"
+    execute \"USE \#{Mytrilogy.get_db_config(Rails.env)['database']}\"
     ######## END Mytrilogy::MysqlTransformer.dump2migration
   end
 
